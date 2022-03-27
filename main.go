@@ -45,13 +45,41 @@ func main() {
                 if network=="starcoin"{
                     uuid := uuid.New()
                     key := uuid.String()
+                    fmt.Printf("start a starcoin dev network,chainId is %s\n",key)
                     cmd := exec.Command("bash", "-c", "starcoin -n "+
                         coinConfigure.NetworkType +" -d "+coinConfigure.DataPath+key)
-                    stdout, err := cmd.Output()
-                    if err != nil {
-                        fmt.Printf("error: %+v\n", err)
+                    if err := cmd.Start(); err != nil {
+                        log.Println("exec the cmd ", cmd, " failed")
+                        return err
                     }
-                    fmt.Printf("The blockchain id is %s\n", stdout)
+                    flag := 0
+                    for flag == 0 { //semicolons are ommitted and only condition is present
+                        pscmd :=exec.Command("bash", "-c", "ps -ef | grep starcoin")
+                        data,err :=pscmd.Output()
+                        if err != nil {
+                            fmt.Printf("error: %+v\n", err)
+                            return err
+                        }
+                        if strings.Contains(string(data),"starcoin"){
+                            fmt.Printf("starcoin dev network,chainId is %s\n started \n",key)
+                            coinConfigure.ChainId = key
+                            starcoin.GetCoin(coinConfigure)
+                            flag =1
+                        }
+                    }
+                }
+                return nil
+            },
+        },
+        {
+            Name:        "getcoin",
+            Aliases:     []string{"gc"},
+            Usage:       "get coin",
+            Description: "get coin",
+            Action: func(c *cli.Context) error {
+                coinConfigure :=utils.InitConfig(c)
+                network:=coinConfigure.Network
+                if network=="starcoin"{
                     starcoin.GetCoin(coinConfigure)
                 }
                 return nil

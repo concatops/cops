@@ -49,13 +49,17 @@ func GetCoin(starCoinConfigure *StarCoinConfigure){
 	networkType := starCoinConfigure.NetworkType
 	password := starCoinConfigure.Password
 	userAddress :=starCoinConfigure.UserAddress
-	cmd := exec.Command("bash", "-c", "starcoin -c "+
-		dataPath+chainId+"/"+networkType+"/starcoin.ipc dev get-coin -v 1000000000STC -p "+password+"  "+userAddress)
+	getCoinCmd := dataPath+chainId+"/"+networkType+"/starcoin.ipc dev get-coin -v 10000000STC"
+	if userAddress !=""{
+		getCoinCmd = getCoinCmd +" -p "+password+"  "+userAddress
+	}
+	cmd := exec.Command("bash", "-c", "starcoin -c "+getCoinCmd)
 	stdout, err := cmd.Output()
 	if err != nil {
+		fmt.Printf(getCoinCmd+"\n")
 		fmt.Printf("error: %+v\n", err)
 	}
-	fmt.Printf("The user address is %s\n", stdout)
+	fmt.Printf("Get Coin end %s\n", stdout)
 }
 
 func unlockAccount(starCoinConfigure *StarCoinConfigure){
@@ -86,8 +90,7 @@ func AccountList(starCoinConfigure *StarCoinConfigure) string{
 	if userAddress!=""{
 		baseCommand = baseCommand+" "+userAddress
 	}
-	cmd := exec.Command("bash", "-c", "starcoin -c "+
-		dataPath+chainId+"/"+networkType+"/starcoin.ipc account list -p "+password+"  "+userAddress)
+	cmd := exec.Command("bash", "-c", baseCommand)
 	stdout, err := cmd.Output()
 	if err != nil {
 		fmt.Printf("error: %+v\n", err)
